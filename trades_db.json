@@ -11,5 +11,18 @@
     "r_multiple": -1,
     "emotional_state": "khfjd",
     "mistake": "Early Exit"
+  },
+  {
+    "timestamp": "2026-07-15T00:23:48.603Z",
+    "ticker": "AFDAS",
+    "direction": "Long",
+    "setup_name": "dsafdsa",
+    "entry": 454,
+    "exit": 5454,
+    "stop_loss": 54544,
+    "raw_pnl": 272725000,
+    "r_multiple": 0.09,
+    "emotional_state": "",
+    "mistake": "Moved Stop Loss"
   }
 ]

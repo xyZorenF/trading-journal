@@ -50,7 +50,7 @@ export default function Home() {
           
           <DashboardCharts trades={trades} />
           
-          <HistoricalLedger trades={trades} />
+          <HistoricalLedger trades={trades} onTradeDeleted={fetchTrades} />
         </>
       )}
 

@@ -1,3 +1,5 @@
+"use client";
+
 import React from 'react';
 import { Share2, Eye, Edit2, Trash2 } from 'lucide-react';
 
@@ -15,9 +17,27 @@ interface Trade {
   emotional_state: string;
 }
 
-export default function HistoricalLedger({ trades }: { trades: Trade[] }) {
-  // Sort trades by timestamp descending
+export default function HistoricalLedger({ trades, onTradeDeleted }: { trades: Trade[], onTradeDeleted: () => void }) {
   const sortedTrades = [...trades].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+  const handleDelete = async (timestamp: string, ticker: string) => {
+    if (!confirm(`Delete ${ticker} trade? This cannot be undone.`)) return;
+
+    try {
+      const res = await fetch('/api/trades', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ timestamp }),
+      });
+      if (res.ok) {
+        onTradeDeleted();
+      } else {
+        alert('Failed to delete trade.');
+      }
+    } catch {
+      alert('Error deleting trade.');
+    }
+  };
 
   return (
     <div style={{ marginTop: '24px' }}>
@@ -82,11 +102,17 @@ export default function HistoricalLedger({ trades }: { trades: Trade[] }) {
                     </td>
                     
                     <td style={{ textAlign: 'right' }}>
-                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', opacity: 0.6 }}>
-                        <Share2 size={14} style={{ cursor: 'pointer' }} />
-                        <Eye size={14} style={{ cursor: 'pointer' }} />
-                        <Edit2 size={14} style={{ cursor: 'pointer' }} />
-                        <Trash2 size={14} style={{ cursor: 'pointer' }} />
+                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                        <Share2 size={14} style={{ cursor: 'pointer', opacity: 0.4 }} />
+                        <Eye size={14} style={{ cursor: 'pointer', opacity: 0.4 }} />
+                        <Edit2 size={14} style={{ cursor: 'pointer', opacity: 0.4 }} />
+                        <Trash2
+                          size={14}
+                          style={{ cursor: 'pointer', color: 'var(--danger-color)', opacity: 0.7, transition: 'opacity 0.2s' }}
+                          onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
+                          onMouseLeave={e => (e.currentTarget.style.opacity = '0.7')}
+                          onClick={() => handleDelete(t.timestamp, t.ticker)}
+                        />
                       </div>
                     </td>
                   </tr>

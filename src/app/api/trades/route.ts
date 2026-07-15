@@ -47,3 +47,26 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Failed to save trade.' }, { status: 500 });
   }
 }
+
+// Handle DELETE requests (Delete a trade)
+export async function DELETE(request: Request) {
+  try {
+    const { timestamp } = await request.json();
+    if (!timestamp) {
+      return NextResponse.json({ error: 'Timestamp is required to delete.' }, { status: 400 });
+    }
+
+    let trades = readDB();
+    const initialLength = trades.length;
+    trades = trades.filter((t: any) => t.timestamp !== timestamp);
+
+    if (trades.length === initialLength) {
+      return NextResponse.json({ error: 'Trade not found.' }, { status: 404 });
+    }
+
+    fs.writeFileSync(DB_FILE, JSON.stringify(trades, null, 2));
+    return NextResponse.json({ success: true }, { status: 200 });
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to delete trade.' }, { status: 500 });
+  }
+}
