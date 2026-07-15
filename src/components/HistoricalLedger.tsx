@@ -1,4 +1,5 @@
 import React from 'react';
+import { Share2, Eye, Edit2, Trash2 } from 'lucide-react';
 
 interface Trade {
   timestamp: string;
@@ -7,63 +8,93 @@ interface Trade {
   setup_name: string;
   entry: number;
   exit: number;
+  stop_loss: number;
   raw_pnl: number;
   r_multiple: number;
   mistake: string;
+  emotional_state: string;
 }
 
 export default function HistoricalLedger({ trades }: { trades: Trade[] }) {
-  if (trades.length === 0) {
-    return (
-      <div className="glass-panel animate-fade-in" style={{ animationDelay: '0.3s' }}>
-        <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem" }}>No trades logged yet. Submit your first trade to populate the ledger.</p>
-      </div>
-    );
-  }
-
-  // Sort trades by timestamp descending (newest first)
+  // Sort trades by timestamp descending
   const sortedTrades = [...trades].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
   return (
-    <div className="glass-panel animate-fade-in" style={{ animationDelay: '0.3s' }}>
-      <h3 className="header-subtitle" style={{ color: "var(--text-primary)", fontWeight: "600", fontSize: "1.1rem", marginBottom: "20px" }}>Historical Ledger</h3>
+    <div style={{ marginTop: '24px' }}>
+      <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '12px' }}>
+        Showing {sortedTrades.length} trades
+      </div>
       
-      <div style={{ overflowX: 'auto' }}>
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Ticker</th>
-              <th>Dir</th>
-              <th>Setup</th>
-              <th>Entry</th>
-              <th>Exit</th>
-              <th>PnL</th>
-              <th>R-Mult</th>
-              <th>Mistake</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sortedTrades.map((t, idx) => {
-              const pnlClass = t.raw_pnl > 0 ? "val-positive" : t.raw_pnl < 0 ? "val-negative" : "";
-              const date = new Date(t.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-              
-              return (
-                <tr key={idx}>
-                  <td style={{ color: "var(--text-secondary)" }}>{date}</td>
-                  <td style={{ fontWeight: "bold" }}>{t.ticker}</td>
-                  <td style={{ color: t.direction === 'Long' ? 'var(--success-color)' : 'var(--danger-color)' }}>{t.direction}</td>
-                  <td>{t.setup_name}</td>
-                  <td>{t.entry.toFixed(2)}</td>
-                  <td>{t.exit.toFixed(2)}</td>
-                  <td className={pnlClass}>${t.raw_pnl.toFixed(2)}</td>
-                  <td className={pnlClass}>{t.r_multiple.toFixed(2)}R</td>
-                  <td style={{ color: t.mistake !== 'None' ? 'var(--danger-color)' : 'var(--text-secondary)' }}>{t.mistake}</td>
+      <div className="glass-panel" style={{ padding: '0' }}>
+        <div className="data-table-wrapper">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Token</th>
+                <th>Time</th>
+                <th>Type</th>
+                <th>Entry</th>
+                <th>Exit</th>
+                <th>Stop Loss</th>
+                <th>PNL ($)</th>
+                <th>R-Mult</th>
+                <th>Setup</th>
+                <th>Mistake</th>
+                <th style={{ textAlign: 'right' }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sortedTrades.length === 0 && (
+                <tr>
+                  <td colSpan={11} style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '40px' }}>
+                    No trades logged yet.
+                  </td>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
+              )}
+              {sortedTrades.map((t, idx) => {
+                const dateObj = new Date(t.timestamp);
+                const dateStr = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                const timeStr = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+                
+                return (
+                  <tr key={idx}>
+                    <td style={{ fontWeight: 'bold' }}>{t.ticker}</td>
+                    <td style={{ color: 'var(--text-secondary)' }}>{dateStr} <span style={{ fontSize: '0.75rem', opacity: 0.7 }}>{timeStr}</span></td>
+                    <td>
+                      <span className={t.direction === 'Long' ? 'tag-long' : 'tag-short'}>
+                        {t.direction}
+                      </span>
+                    </td>
+                    <td>{t.entry.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}</td>
+                    <td>{t.exit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}</td>
+                    <td style={{ color: 'var(--text-secondary)' }}>{t.stop_loss}</td>
+                    
+                    <td className={t.raw_pnl >= 0 ? 'val-positive' : 'val-negative'} style={{ fontWeight: '600' }}>
+                      {t.raw_pnl > 0 ? '+' : ''}${t.raw_pnl.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </td>
+                    <td className={t.r_multiple >= 0 ? 'val-positive' : 'val-negative'}>
+                      {t.r_multiple > 0 ? '+' : ''}{t.r_multiple.toFixed(2)}R
+                    </td>
+                    
+                    <td style={{ color: 'var(--text-secondary)' }}>{t.setup_name || '—'}</td>
+                    <td style={{ color: t.mistake !== 'None' ? 'var(--danger-color)' : 'var(--text-secondary)' }}>
+                      {t.mistake === 'None' ? '—' : t.mistake}
+                    </td>
+                    
+                    <td style={{ textAlign: 'right' }}>
+                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', opacity: 0.6 }}>
+                        <Share2 size={14} style={{ cursor: 'pointer' }} />
+                        <Eye size={14} style={{ cursor: 'pointer' }} />
+                        <Edit2 size={14} style={{ cursor: 'pointer' }} />
+                        <Trash2 size={14} style={{ cursor: 'pointer' }} />
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

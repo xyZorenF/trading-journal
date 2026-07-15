@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState } from 'react';
+import { Plus, X } from 'lucide-react';
 
 export default function TradeForm({ onTradeLogged }: { onTradeLogged: () => void }) {
+  const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     ticker: '',
@@ -73,7 +75,6 @@ export default function TradeForm({ onTradeLogged }: { onTradeLogged: () => void
       });
       if (res.ok) {
         onTradeLogged();
-        // Reset specific fields but keep others that might repeat
         setFormData({
           ...formData,
           ticker: '',
@@ -82,6 +83,7 @@ export default function TradeForm({ onTradeLogged }: { onTradeLogged: () => void
           stop_loss: '',
           position_size: '',
         });
+        setIsOpen(false);
       }
     } catch (error) {
       console.error("Failed to log trade", error);
@@ -91,70 +93,90 @@ export default function TradeForm({ onTradeLogged }: { onTradeLogged: () => void
   };
 
   return (
-    <div className="glass-panel animate-fade-in">
-      <h2 className="header-subtitle" style={{ color: "var(--text-primary)", fontWeight: "600", fontSize: "1.2rem", marginBottom: "20px" }}>Log Trade</h2>
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label className="form-label">Ticker</label>
-          <input type="text" name="ticker" value={formData.ticker} onChange={handleChange} className="form-input" placeholder="e.g., AAPL, BTC" required />
-        </div>
-        
-        <div className="form-group">
-          <label className="form-label">Direction</label>
-          <select name="direction" value={formData.direction} onChange={handleChange} className="form-select">
-            <option value="Long">Long</option>
-            <option value="Short">Short</option>
-          </select>
-        </div>
+    <>
+      <button 
+        onClick={() => setIsOpen(true)} 
+        className="btn-primary" 
+        style={{ width: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}
+      >
+        <Plus size={16} /> Log Trade
+      </button>
 
-        <div className="form-group">
-          <label className="form-label">Setup Name</label>
-          <input type="text" name="setup_name" value={formData.setup_name} onChange={handleChange} className="form-input" placeholder="e.g., Breakout" required />
-        </div>
+      {isOpen && (
+        <div className="modal-overlay" onClick={() => setIsOpen(false)}>
+          <div className="modal-content animate-fade-in" onClick={e => e.stopPropagation()}>
+            
+            <div className="modal-header">
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 600 }}>Log Trade</h2>
+              <button className="btn-icon" onClick={() => setIsOpen(false)}>
+                <X size={20} />
+              </button>
+            </div>
 
-        <div style={{ display: 'flex', gap: '16px' }}>
-          <div className="form-group" style={{ flex: 1 }}>
-            <label className="form-label">Entry Price</label>
-            <input type="number" step="any" name="entry" value={formData.entry} onChange={handleChange} className="form-input" required />
+            <div className="modal-body">
+              <form onSubmit={handleSubmit}>
+                <div style={{ display: 'flex', gap: '16px' }}>
+                  <div className="form-group" style={{ flex: 1 }}>
+                    <label className="form-label">Ticker</label>
+                    <input type="text" name="ticker" value={formData.ticker} onChange={handleChange} className="form-input" placeholder="AAPL, BTC" required />
+                  </div>
+                  <div className="form-group" style={{ flex: 1 }}>
+                    <label className="form-label">Direction</label>
+                    <select name="direction" value={formData.direction} onChange={handleChange} className="form-select">
+                      <option value="Long">Long</option>
+                      <option value="Short">Short</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Setup Name</label>
+                  <input type="text" name="setup_name" value={formData.setup_name} onChange={handleChange} className="form-input" placeholder="e.g., Breakout" required />
+                </div>
+
+                <div style={{ display: 'flex', gap: '16px' }}>
+                  <div className="form-group" style={{ flex: 1 }}>
+                    <label className="form-label">Entry Price</label>
+                    <input type="number" step="any" name="entry" value={formData.entry} onChange={handleChange} className="form-input" required />
+                  </div>
+                  <div className="form-group" style={{ flex: 1 }}>
+                    <label className="form-label">Exit Price</label>
+                    <input type="number" step="any" name="exit" value={formData.exit} onChange={handleChange} className="form-input" required />
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '16px' }}>
+                  <div className="form-group" style={{ flex: 1 }}>
+                    <label className="form-label">Stop Loss</label>
+                    <input type="number" step="any" name="stop_loss" value={formData.stop_loss} onChange={handleChange} className="form-input" required />
+                  </div>
+                  <div className="form-group" style={{ flex: 1 }}>
+                    <label className="form-label">Position Size</label>
+                    <input type="number" step="any" name="position_size" value={formData.position_size} onChange={handleChange} className="form-input" required />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Mistake</label>
+                  <select name="mistake" value={formData.mistake} onChange={handleChange} className="form-select">
+                    <option value="None">None</option>
+                    <option value="FOMO Entry">FOMO Entry</option>
+                    <option value="Chased Price">Chased Price</option>
+                    <option value="Moved Stop Loss">Moved Stop Loss</option>
+                    <option value="Early Exit">Early Exit</option>
+                    <option value="Overleveraged">Overleveraged</option>
+                  </select>
+                </div>
+
+                <button type="submit" className="btn-primary" disabled={loading} style={{ marginTop: '16px' }}>
+                  {loading ? 'Processing...' : 'Save & Calculate Metrics'}
+                </button>
+              </form>
+            </div>
+
           </div>
-          <div className="form-group" style={{ flex: 1 }}>
-            <label className="form-label">Exit Price</label>
-            <input type="number" step="any" name="exit" value={formData.exit} onChange={handleChange} className="form-input" required />
-          </div>
         </div>
-
-        <div style={{ display: 'flex', gap: '16px' }}>
-          <div className="form-group" style={{ flex: 1 }}>
-            <label className="form-label">Stop Loss</label>
-            <input type="number" step="any" name="stop_loss" value={formData.stop_loss} onChange={handleChange} className="form-input" required />
-          </div>
-          <div className="form-group" style={{ flex: 1 }}>
-            <label className="form-label">Position Size (Shares/Units)</label>
-            <input type="number" step="any" name="position_size" value={formData.position_size} onChange={handleChange} className="form-input" required />
-          </div>
-        </div>
-
-        <div className="form-group">
-          <label className="form-label">Emotional State / Mindset</label>
-          <input type="text" name="emotional_state" value={formData.emotional_state} onChange={handleChange} className="form-input" placeholder="e.g., Calm, Anxious" />
-        </div>
-
-        <div className="form-group">
-          <label className="form-label">Execution Mistake</label>
-          <select name="mistake" value={formData.mistake} onChange={handleChange} className="form-select">
-            <option value="None">None</option>
-            <option value="FOMO Entry">FOMO Entry</option>
-            <option value="Chased Price">Chased Price</option>
-            <option value="Moved Stop Loss">Moved Stop Loss</option>
-            <option value="Early Exit">Early Exit</option>
-            <option value="Overleveraged">Overleveraged</option>
-          </select>
-        </div>
-
-        <button type="submit" className="btn-primary" disabled={loading} style={{ marginTop: '10px' }}>
-          {loading ? 'Logging...' : 'Save Trade'}
-        </button>
-      </form>
-    </div>
+      )}
+    </>
   );
 }

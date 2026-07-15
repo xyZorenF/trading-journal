@@ -1,0 +1,15 @@
+[
+  {
+    "timestamp": "2026-07-15T00:11:34.644Z",
+    "ticker": "SAFDSA",
+    "direction": "Long",
+    "setup_name": "dafdsa",
+    "entry": 4454,
+    "exit": 124,
+    "stop_loss": 5453,
+    "raw_pnl": -95260,
+    "r_multiple": -1,
+    "emotional_state": "khfjd",
+    "mistake": "Early Exit"
+  }
+]

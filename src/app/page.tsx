@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import TradeForm from '@/components/TradeForm';
 import PerformanceHUD from '@/components/PerformanceHUD';
-import MistakeHeatmap from '@/components/MistakeHeatmap';
+import DashboardCharts from '@/components/DashboardCharts';
 import HistoricalLedger from '@/components/HistoricalLedger';
 
 export default function Home() {
@@ -29,35 +29,31 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="container">
-      <header className="header animate-fade-in">
-        <h1 className="header-title">⚡ Vibe Trading Journal</h1>
-        <p className="header-subtitle">Minimalist, local-first execution tracker. No fluff, just math and mindset.</p>
+    <main className="container animate-fade-in">
+      
+      <header className="header-row">
+        <div className="brand-title">
+          <span style={{ color: "var(--accent-color)" }}>⚡</span> Vibe Journal
+        </div>
+        <div>
+          <TradeForm onTradeLogged={fetchTrades} />
+        </div>
       </header>
 
-      <div className="grid-layout">
-        {/* Left Column - Logging */}
-        <section>
-          <TradeForm onTradeLogged={fetchTrades} />
-        </section>
+      {loading ? (
+        <div style={{ textAlign: "center", color: "var(--text-secondary)", marginTop: "100px" }}>
+          Loading your edge...
+        </div>
+      ) : (
+        <>
+          <PerformanceHUD trades={trades} />
+          
+          <DashboardCharts trades={trades} />
+          
+          <HistoricalLedger trades={trades} />
+        </>
+      )}
 
-        {/* Right Column - Analysis */}
-        <section>
-          {loading ? (
-            <div style={{ color: "var(--text-secondary)", textAlign: "center", padding: "40px" }}>Loading data...</div>
-          ) : (
-            <>
-              <PerformanceHUD trades={trades} />
-              
-              <MistakeHeatmap trades={trades} />
-              
-              <div className="divider"></div>
-              
-              <HistoricalLedger trades={trades} />
-            </>
-          )}
-        </section>
-      </div>
     </main>
   );
 }
