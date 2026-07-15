@@ -70,3 +70,31 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: 'Failed to delete trade.' }, { status: 500 });
   }
 }
+
+// Handle PUT requests (Edit an existing trade by timestamp)
+export async function PUT(request: Request) {
+  try {
+    const { originalTimestamp, updatedTrade } = await request.json();
+    if (!originalTimestamp || !updatedTrade) {
+      return NextResponse.json({ error: 'originalTimestamp and updatedTrade are required.' }, { status: 400 });
+    }
+
+    let trades = readDB();
+    const idx = trades.findIndex((t: any) => t.timestamp === originalTimestamp);
+
+    if (idx === -1) {
+      return NextResponse.json({ error: 'Trade not found.' }, { status: 404 });
+    }
+
+    // Server-side R-Multiple capping
+    if (updatedTrade.r_multiple < -1) {
+      updatedTrade.r_multiple = -1.0;
+    }
+
+    trades[idx] = updatedTrade;
+    fs.writeFileSync(DB_FILE, JSON.stringify(trades, null, 2));
+    return NextResponse.json({ success: true, trade: updatedTrade }, { status: 200 });
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to update trade.' }, { status: 500 });
+  }
+}
