@@ -11,7 +11,7 @@ export default function TradeForm({ onTradeLogged }: { onTradeLogged: () => void
     entry: '',
     exit: '',
     stop_loss: '',
-    raw_pnl: '',
+    position_size: '',
     emotional_state: '',
     mistake: 'None'
   });
@@ -27,6 +27,14 @@ export default function TradeForm({ onTradeLogged }: { onTradeLogged: () => void
     const entry = parseFloat(formData.entry);
     const exitPrice = parseFloat(formData.exit);
     const stopLoss = parseFloat(formData.stop_loss);
+    const positionSize = parseFloat(formData.position_size);
+    
+    let raw_pnl = 0.0;
+    if (formData.direction === "Long") {
+      raw_pnl = (exitPrice - entry) * positionSize;
+    } else {
+      raw_pnl = (entry - exitPrice) * positionSize;
+    }
     
     let r_multiple = 0.0;
     const risk = Math.abs(entry - stopLoss);
@@ -51,7 +59,7 @@ export default function TradeForm({ onTradeLogged }: { onTradeLogged: () => void
       entry,
       exit: exitPrice,
       stop_loss: stopLoss,
-      raw_pnl: parseFloat(formData.raw_pnl),
+      raw_pnl: parseFloat(raw_pnl.toFixed(2)),
       r_multiple: parseFloat(r_multiple.toFixed(2)),
       emotional_state: formData.emotional_state,
       mistake: formData.mistake
@@ -72,7 +80,7 @@ export default function TradeForm({ onTradeLogged }: { onTradeLogged: () => void
           entry: '',
           exit: '',
           stop_loss: '',
-          raw_pnl: '',
+          position_size: '',
         });
       }
     } catch (error) {
@@ -121,8 +129,8 @@ export default function TradeForm({ onTradeLogged }: { onTradeLogged: () => void
             <input type="number" step="any" name="stop_loss" value={formData.stop_loss} onChange={handleChange} className="form-input" required />
           </div>
           <div className="form-group" style={{ flex: 1 }}>
-            <label className="form-label">Raw PnL ($)</label>
-            <input type="number" step="any" name="raw_pnl" value={formData.raw_pnl} onChange={handleChange} className="form-input" required />
+            <label className="form-label">Position Size (Shares/Units)</label>
+            <input type="number" step="any" name="position_size" value={formData.position_size} onChange={handleChange} className="form-input" required />
           </div>
         </div>
 
